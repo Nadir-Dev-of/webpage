@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>For Lamis (Eyniyya) 🖤💜</title>
+<meta name="description" content="A Kuromi-inspired mini love game for Lamis from Nadir." />
+<meta name="theme-color" content="#6a35ff" />
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --kuromi-purple: #6a35ff;
+  --kuromi-pink: #ff8af5;
+  --kuromi-dark: #1a001a;
+  --radius-pill: 999px;
+  --radius-card: 24px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Nunito',sans-serif;
+  background:linear-gradient(135deg,var(--kuromi-dark),var(--kuromi-purple));
+  color:#fff;
+  text-align:center;
+  min-height:100vh;
+  padding:20px;
+}
+.screen{display:none;opacity:0;transition:opacity 0.6s ease;}
+.screen.active{display:block;opacity:1;}
+h1{font-family:'Pacifico',cursive;font-size:2.5rem;margin-bottom:1rem;text-shadow:0 0 10px #fff;}
+h2{font-size:1.75rem;margin-bottom:1rem;text-shadow:0 0 8px #fff;}
+.question-buttons{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:1rem;}
+button{
+  padding:0.8rem 1.6rem;
+  font-size:1.1rem;
+  font-weight:700;
+  border:none;
+  border-radius:var(--radius-pill);
+  color:#fff;
+  cursor:pointer;
+  transition:transform 0.2s;
+}
+button:active{transform:scale(0.95);}
+#yesBtn{background:var(--kuromi-pink);}
+#noBtn{background:#444;}
+.reasons-list p{
+  font-size:1.2rem;
+  margin:0.8rem 0;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity 0.6s ease,transform 0.6s ease;
+}
+.reasons-list p.show{opacity:1;transform:translateY(0);}
+.final-message{
+  opacity:0;
+  transform:scale(0.9);
+  transition:opacity 0.8s ease,transform 0.8s ease;
+}
+.final-message.show{opacity:1;transform:scale(1);text-shadow:0 0 10px #fff,0 0 20px var(--kuromi-purple);}
+.signature{margin-top:1rem;font-weight:600;}
+.modal-backdrop{
+  position:fixed;inset:0;display:none;justify-content:center;align-items:center;background:rgba(0,0,0,0.7);z-index:1000;
+}
+.modal-backdrop.show{display:flex;}
+.modal-card{background:var(--kuromi-purple);padding:20px;border-radius:var(--radius-card);max-width:90%;}
+.modal-card h3{font-family:'Pacifico',cursive;margin-top:0;}
+.modal-card button{margin-top:10px;background:var(--kuromi-pink);}
+.confetti-emoji{position:fixed;font-size:2rem;opacity:0;animation:confettiPop 1.5s ease forwards;}
+@keyframes confettiPop{0%{opacity:0;transform:scale(0.5);}20%{opacity:1;transform:translateY(-50px) scale(1);}100%{opacity:0;transform:translateY(-200px) scale(0.8);}}
+.shake{animation:shakeNo 0.4s ease;}
+@keyframes shakeNo{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="screen-intro" class="screen active">
+    <h1>Hey Eyniyya! 🖤💜✨</h1>
+    <h2>Will you be my partner in crime forever? 🔐</h2>
+    <div class="question-buttons">
+      <button id="yesBtn">Yes, forever! 🖤</button>
+      <button id="noBtn">No way 💜</button>
+    </div>
+  </section>
+  <section id="screen-reasons" class="screen">
+    <h2>Why I can’t stop loving you 😍</h2>
+    <div class="reasons-list" id="reasonsList">
+      <p>Your smile > every sunrise ever</p>
+      <p>You make my heart race faster than F1 Cars 💜</p>
+      <p>Every love song sounds like it’s written for us 🎶</p>
+      <p>…and infinite more reasons that even the universe can’t count 💜</p>
+    </div>
+  </section>
+  <section id="screen-final" class="screen">
+    <h2>Forever Us 💌</h2>
+    <div class="final-message" id="finalMessage">  Eyniaa, you’re my favorite notification every day. 💜 <br>You’re my dream come true, my chaos, and my safe space all in one. 💜 <br>I promise to love you louder than every galaxy combined. Forever starts now! ✨</div>
+    <div class="signature">– Yours endlessly, Nadir 💜</div>
+  </section>
+</div>
+<div id="noModal" class="modal-backdrop">
+  <div class="modal-card">
+    <h3>Wait… what? 😳</h3>
+    <p>No way you’re saying no to me! 🤔 Let’s reset this because you know you love me, baby. 💖</p>
+    <button id="askAgainBtn">Okay… Ask me again 🖤</button>
+  </div>
+</div>
+<script>
+(function(){
+  const intro=document.getElementById('screen-intro');
+  const reasons=document.getElementById('screen-reasons');
+  const final=document.getElementById('screen-final');
+  const yesBtn=document.getElementById('yesBtn');
+  const noBtn=document.getElementById('noBtn');
+  const noModal=document.getElementById('noModal');
+  const askAgain=document.getElementById('askAgainBtn');
+  const rEls=[...document.querySelectorAll('#reasonsList p')];
+  const finalMsg=document.getElementById('finalMessage');
+  let noClicks=0;
+  const NO_LIMIT=3;
+
+  function showScreen(s){[intro,reasons,final].forEach(e=>{e.classList.remove('active')});s.classList.add('active');}
+  function clearReasons(){rEls.forEach(el=>el.classList.remove('show'));}
+
+  yesBtn.addEventListener('click',()=>{
+    showScreen(reasons);
+    clearReasons();
+    rEls.forEach((el,i)=>setTimeout(()=>el.classList.add('show'),400*(i+1)));
+    setTimeout(()=>{
+      reasons.style.opacity='0';
+      setTimeout(()=>{
+        showScreen(final);
+        requestAnimationFrame(()=>finalMsg.classList.add('show'));
+        emojiBurst();
+        reasons.style.opacity='';
+      },500);
+    },400*rEls.length+1200);
+  });
+
+  noBtn.addEventListener('click',()=>{
+    noBtn.classList.remove('shake');void noBtn.offsetWidth;noBtn.classList.add('shake');
+    noClicks++;
+    if(noClicks>=NO_LIMIT){noModal.classList.add('show');}
+  });
+
+  askAgain.addEventListener('click',()=>{noClicks=0;noModal.classList.remove('show');showScreen(intro);});
+
+  function emojiBurst(count=15){
+    const w=window.innerWidth,h=window.innerHeight;
+    const chars=['🖤','💜','✨'];
+    for(let i=0;i<count;i++){
+      const span=document.createElement('span');
+      span.className='confetti-emoji';
+      span.textContent=chars[Math.floor(Math.random()*chars.length)];
+      span.style.left=Math.random()*w+'px';
+      span.style.top=(h-50)+'px';
+      document.body.appendChild(span);
+      setTimeout(()=>span.remove(),1500);
+    }
+  }
+})();
+</script>
+</body>
+</html>
